@@ -52,6 +52,12 @@ namespace g4
             set { vertices[key] = value; Timestamp++; }
         }
 
+        public void SetDomain(double start, double end)
+        {
+            Domain = (start, end);
+            Timestamp++;
+        }
+
         public Vector3d Start
         {
             get { return vertices[0]; }
@@ -74,6 +80,13 @@ namespace g4
 
         public void AppendVertex(Vector3d v)
         {
+            vertices.Add(v);
+            Timestamp++;
+        }
+
+        public void AppendVertex( double x, double y, double z)
+        {
+            Vector3d v = new Vector3d(x, y, z);
             vertices.Add(v);
             Timestamp++;
         }
@@ -176,6 +189,16 @@ namespace g4
         {
             vertices.RemoveAt(i);
             Timestamp++;
+        }
+
+        public double GetTotalLength()
+        {
+            double totalLength = 0.0;
+            for (int i = 0; i < vertices.Count - 1; i++)
+            {
+                totalLength += (vertices[i + 1] - vertices[i]).Length;
+            }
+            return totalLength;
         }
 
     }

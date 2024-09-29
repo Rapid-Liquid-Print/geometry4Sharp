@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace g4
 {
@@ -26,24 +27,43 @@ namespace g4
             Domain = (0, VertexCount - 1);
         }
 
-        public PolyLine3d(Vector3d[] v)
+        // Constructor with array of Vector3d
+        public PolyLine3d(Vector3d[] v, bool allowDuplicatePoints = false)
         {
-            vertices = new List<Vector3d>(v);
-            Timestamp = 0;
-            Domain = (0, VertexCount - 1);
-        }
-        public PolyLine3d(VectorArray3d v)
-        {
-            vertices = new List<Vector3d>(v.AsVector3d());
+            vertices = new List<Vector3d>();
+            AddVertices(v, allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
         }
 
-        public PolyLine3d(IEnumerable<Vector3d> v)
+        // Constructor with VectorArray3d
+        public PolyLine3d(VectorArray3d v, bool allowDuplicatePoints = false)
         {
-            vertices = new List<Vector3d>(v);
+            vertices = new List<Vector3d>();
+            AddVertices(v.AsVector3d(), allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+        }
+
+        // Constructor with IEnumerable<Vector3d>
+        public PolyLine3d(IEnumerable<Vector3d> v, bool allowDuplicatePoints = false)
+        {
+            vertices = new List<Vector3d>();
+            AddVertices(v, allowDuplicatePoints);
+            Timestamp = 0;
+            Domain = (0, VertexCount - 1);
+        }
+
+        // Method to add vertices with optional duplicate point checking
+        private void AddVertices(IEnumerable<Vector3d> v, bool allowDuplicatePoints = false)
+        {
+            foreach (var point in v)
+            {
+                if (allowDuplicatePoints || vertices.Count == 0 || !vertices.Last().Equals(point))
+                {
+                    vertices.Add(point);
+                }
+            }
         }
 
         public Vector3d this[int key]

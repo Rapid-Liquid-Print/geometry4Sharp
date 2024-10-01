@@ -54,6 +54,15 @@ namespace g4
             Domain = (0, VertexCount - 1);
         }
 
+        public PolyLine3d(List<Vector3d> v, bool allowDuplicatePoints = false)
+        {
+            vertices = new List<Vector3d>();
+            AddVertices(v, allowDuplicatePoints);
+            Timestamp = 0;
+            Domain = (0, VertexCount - 1);
+        }
+
+
         // Method to add vertices with optional duplicate point checking
         private void AddVertices(IEnumerable<Vector3d> v, bool allowDuplicatePoints = false)
         {
@@ -86,8 +95,6 @@ namespace g4
         {
             get { return vertices[vertices.Count - 1]; }
         }
-
-
         public ReadOnlyCollection<Vector3d> Vertices
         {
             get { return vertices.AsReadOnly(); }
@@ -97,27 +104,44 @@ namespace g4
         {
             get { return vertices.Count; }
         }
-
-        public void AppendVertex(Vector3d v)
+        public void AppendVertex(Vector3d v) 
         {
-            vertices.Add(v);
-            Timestamp++;
-        }
+            if (vertices.Count == 0 || !vertices.Last().Equals(v))
+            {
+                vertices.Add(v);
+                Timestamp++;
+            }
+        } 
 
-        public void AppendVertex( double x, double y, double z)
+        // Append a single vertex using x, y, z coordinates with optional duplicate checking
+        public void AppendVertex(double x, double y, double z)
         {
             Vector3d v = new Vector3d(x, y, z);
-            vertices.Add(v);
-            Timestamp++;
+            if (vertices.Count == 0 || !vertices.Last().Equals(v))
+            {
+                vertices.Add(v);
+                Timestamp++;
+            }
         }
 
+        // Insert a vertex at a specific index with optional duplicate checking
         public void InsertVertex(int i, Vector3d v)
         {
             if (i < 0 || i > vertices.Count)
                 throw new ArgumentOutOfRangeException(nameof(i), "Index is out of range.");
 
-            vertices.Insert(i, v);
-            Timestamp++;  // Update the timestamp after modification
+            bool isDuplicate = false;
+            // Check for duplicates based on adjacent points
+            if ((i > 0 && vertices[i - 1].Equals(v)) || (i < vertices.Count && vertices[i].Equals(v)))
+            {
+                isDuplicate = true;
+            }
+
+            if (!isDuplicate)
+            {
+                vertices.Insert(i, v);
+                Timestamp++;
+            }
         }
 
         public Vector3d GetTangent(int i)
@@ -168,24 +192,21 @@ namespace g4
             {
                 throw new Exception("Polyline must be closed to reorder vertices");
             }
+
             else
             {
-                List<Vector3d> newVertices = new List<Vector3d>();
+                // Split the list into two parts: from newStart to end, and from beginning to newStart
+                List<Vector3d> reorderedVertices = new List<Vector3d>();
 
-                // Add all vertices starting from the new first vertex to the end
-                for (int i = newStart; i < VertexCount; i++)
-                {
-                    newVertices.Add(vertices[i]);
-                }
+                // Add the points from newStart to the end
+                reorderedVertices.AddRange(vertices.GetRange(newStart, vertices.Count - newStart));
 
-                // Add all remaining vertices from the beginning up to the new first vertex
-                for (int i = 0; i < newStart; i++)
-                {
-                    newVertices.Add(vertices[i]);
-                }
+                // Add the points from the beginning to newStart (excluding newStart)
+                reorderedVertices.AddRange(vertices.GetRange(0, newStart));
 
-                // Replace the vertices in the polyline
-                vertices = newVertices;
+                vertices = new List<Vector3d>();
+                AddVertices(reorderedVertices, false);
+                ClosePolyline();
                 Timestamp++;  // Update timestamp to reflect changes
             }
 

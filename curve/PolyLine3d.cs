@@ -10,6 +10,8 @@ namespace g4
     {
         protected List<Vector3d> vertices;
         public int Timestamp;
+        public bool isValid;
+        public bool isClosed;
 
         // The domain will be stored as a tuple representing (start, end)
         public (double Start, double End) Domain { get; set; }
@@ -18,6 +20,8 @@ namespace g4
             vertices = new List<Vector3d>();
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = true;
+            isClosed = true;
         }
 
         public PolyLine3d(PolyLine3d copy)
@@ -25,6 +29,8 @@ namespace g4
             vertices = new List<Vector3d>(copy.vertices);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = IsValid();
+            isClosed = IsClosed();
         }
 
         // Constructor with array of Vector3d
@@ -34,6 +40,8 @@ namespace g4
             AddVertices(v, allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = IsValid();
+            isClosed = IsClosed();
         }
 
         // Constructor with VectorArray3d
@@ -43,6 +51,8 @@ namespace g4
             AddVertices(v.AsVector3d(), allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = IsValid();
+            isClosed = IsClosed();
         }
 
         // Constructor with IEnumerable<Vector3d>
@@ -52,6 +62,8 @@ namespace g4
             AddVertices(v, allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = IsValid();
+            isClosed = IsClosed();
         }
 
         public PolyLine3d(List<Vector3d> v, bool allowDuplicatePoints = false)
@@ -60,6 +72,8 @@ namespace g4
             AddVertices(v, allowDuplicatePoints);
             Timestamp = 0;
             Domain = (0, VertexCount - 1);
+            isValid = IsValid();
+            isClosed = IsClosed();
         }
 
 
@@ -68,7 +82,7 @@ namespace g4
         {
             foreach (var point in v)
             {
-                if (allowDuplicatePoints || vertices.Count == 0 || !vertices.Last().Equals(point))
+                if (allowDuplicatePoints || vertices.Count == 0 || !vertices.Last().EpsilonEqual(point, .0001));
                 {
                     vertices.Add(point);
                 }
@@ -242,5 +256,28 @@ namespace g4
             return totalLength;
         }
 
+        public bool IsValid()
+        {
+            //check that the polyline has no duplicate points
+            bool isValid = true;
+
+            if(vertices.Count <=1)
+            {
+                isValid = false;
+            }
+
+            else
+            {
+                for (int i = 0; i < vertices.Count - 1; i++)
+                {
+                    if (vertices[i].Equals(vertices[i + 1]))
+                    {
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+            return isValid;
+        }
     }
 }

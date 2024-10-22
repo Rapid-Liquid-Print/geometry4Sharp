@@ -1,4 +1,10 @@
-# geometry4Sharp
+# (DEPRECATED) geometry4Sharp (DEPRECATED)
+
+---
+The content of this repository **has been moved**<br/>
+to a `geometry4Sharp` subdirectory in https://github.com/Rapid-Liquid-Print/rlp_production
+
+---
 
 Open-Source (Boost-license) C# library for geometric computing. 
 
